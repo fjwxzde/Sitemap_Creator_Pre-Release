@@ -90,7 +90,8 @@ if (['pr', 'pullrequest', 'pullrequests', 'prs', '拉取请求'].includes(UPDATE
         });
     }
 
-    const BRANCH_NAME = `sitemap-update-${format(new Date(), 'yyyyMMddHHmmss')}`;
+    const now = new Date();
+    const BRANCH_NAME = `sitemap-update-${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}${now.getSeconds().toString().padStart(2, '0')}`;
     execSync(`git checkout -b ${BRANCH_NAME}`);
     console.log(`[INFO] 已创建新分支: ${BRANCH_NAME}`);
 
