@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import fetch from 'node-fetch';
+import https from 'https';
 
 // 获取当前日期和时间
 const DATE_TIME = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
@@ -56,45 +56,61 @@ if (['pr', 'pullrequest', 'pullrequests', 'prs', '拉取请求'].includes(UPDATE
 
     if (CLEAN_REVIEWER) {
         const reviewers = CLEAN_REVIEWER.split(',');
-        const response = await fetch(`https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/collaborators`, {
+        const options = {
+            hostname: 'api.github.com',
+            path: `/repos/${process.env.GITHUB_REPOSITORY}/collaborators`,
             headers: {
-                'Authorization': `token ${process.env.TOKEN}`
+                'Authorization': `token ${process.env.TOKEN}`,
+                'User-Agent': 'node.js'
             }
-        });
-        const statusCode = response.status;
-        const collaborators = await response.json();
+        };
 
-        if (['200', '201'].includes(statusCode)) {
-            reviewers.forEach(reviewer => {
-                const isCollaborator = collaborators.some(collaborator => collaborator.login === reviewer);
-                if (!isCollaborator) {
-                    console.error(`[ERROR] ${reviewer} 不是仓库的协作者`);
-                    if (process.env.DEBUG) {
-                        console.log('[DEBUG] GitHub API 请求返回:');
-                        console.log(JSON.stringify(collaborators, null, 2));
-                    }
+        https.get(options, (res) => {
+            let data = '';
+            res.on('data', (chunk) => {
+                data += chunk;
+            });
+
+            res.on('end', () => {
+                const statusCode = res.statusCode;
+                const collaborators = JSON.parse(data);
+
+                if (['200', '201'].includes(statusCode)) {
+                    reviewers.forEach(reviewer => {
+                        const isCollaborator = collaborators.some(collaborator => collaborator.login === reviewer);
+                        if (!isCollaborator) {
+                            console.error(`[ERROR] ${reviewer} 不是仓库的协作者`);
+                            if (process.env.DEBUG) {
+                                console.log('[DEBUG] GitHub API 请求返回:');
+                                console.log(JSON.stringify(collaborators, null, 2));
+                            }
+                            process.exit(1);
+                        } else if (process.env.DEBUG) {
+                            console.log(`[DEBUG] 审查者 ${reviewer} 鉴权成功`);
+                        }
+                    });
+                } else if (statusCode === 401) {
+                    console.error('[ERROR] 验证审查者时出错: 鉴权失败 (401):');
+                    console.log(JSON.stringify(collaborators, null, 2));
                     process.exit(1);
-                } else if (process.env.DEBUG) {
-                    console.log(`[DEBUG] 审查者 ${reviewer} 鉴权成功`);
+                } else if (statusCode === 403) {
+                    console.error('[ERROR] 验证审查者时出错: 没有权限或达到速率限制 (403)');
+                    console.log(JSON.stringify(collaborators, null, 2));
+                    process.exit(1);
+                } else if (statusCode === 404) {
+                    console.error('[ERROR] 验证审查者时出错: 没有权限或仓库不存在 (404)');
+                    console.log(JSON.stringify(collaborators, null, 2));
+                    process.exit(1);
+                } else {
+                    console.error(`[ERROR] 验证审查者时出错: 未命中的非成功状态码 (${statusCode})`);
+                    console.log(JSON.stringify(collaborators, null, 2));
+                    process.exit(1);
                 }
             });
-        } else if (statusCode === 401) {
-            console.error('[ERROR] 验证审查者时出错: 鉴权失败 (401):');
-            console.log(JSON.stringify(collaborators, null, 2));
+        }).on('error', (e) => {
+            console.error(`[ERROR] 请求失败: ${e.message}`);
             process.exit(1);
-        } else if (statusCode === 403) {
-            console.error('[ERROR] 验证审查者时出错: 没有权限或达到速率限制 (403)');
-            console.log(JSON.stringify(collaborators, null, 2));
-            process.exit(1);
-        } else if (statusCode === 404) {
-            console.error('[ERROR] 验证审查者时出错: 没有权限或仓库不存在 (404)');
-            console.log(JSON.stringify(collaborators, null, 2));
-            process.exit(1);
-        } else {
-            console.error(`[ERROR] 验证审查者时出错: 未命中的非成功状态码 (${statusCode})`);
-            console.log(JSON.stringify(collaborators, null, 2));
-            process.exit(1);
-        }
+        });
     }
 
     const now = new Date();
