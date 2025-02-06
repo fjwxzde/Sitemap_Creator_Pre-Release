@@ -60,8 +60,8 @@ if (['pr', 'pullrequest', 'pullrequests', 'prs', '拉取请求'].includes(UPDATE
             const statusCode = response.toString().slice(-3);
 
             if (['200', '201'].includes(statusCode)) {
-                const isCollaborator = execSync(`jq -e ".[] | select(.login == \\"${reviewer}\\")" response.json`);
-                if (!isCollaborator) {
+                const isCollaborator = execSync(`jq -e ".[] | select(.login == \\"${reviewer}\\")" response.json`, { stdio: 'pipe' });
+                if (!isCollaborator.toString().trim()) {
                     console.error(`[ERROR] ${reviewer} 不是仓库的协作者`);
                     if (process.env.DEBUG) {
                         console.log('[DEBUG] GitHub API 请求返回:');
