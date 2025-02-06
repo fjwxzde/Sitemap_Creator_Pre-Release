@@ -94,8 +94,6 @@ if (['pr', 'pullrequest', 'pullrequests', 'prs', '拉取请求'].includes(UPDATE
     const BRANCH_NAME = `sitemap-update-${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}${now.getSeconds().toString().padStart(2, '0')}`;
     execSync(`git checkout -b ${BRANCH_NAME}`);
     console.log(`[INFO] 已创建新分支: ${BRANCH_NAME}`);
-
-    const WORKFLOW_URL = `https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
 } else if (['commit', '提交', '直接提交', 'directcommit', 'commitdirectly'].includes(UPDATE_WAY)) {
     UPDATE_WAY = 'Commit';
     if (process.env.DEBUG) {
@@ -128,6 +126,7 @@ execSync('git config --global push.autoSetupRemote true');
 execSync('git push');
 
 if (UPDATE_WAY === 'PR') {
+    const WORKFLOW_URL = `https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
     const PR_URL = execSync(`gh pr create --title "[${DATE_TIME}] 自动更新网站地图" --body "此拉取请求通过 [工作流](${WORKFLOW_URL}) 使用 [Sitemap Creator](https://github.com/DuckDuckStudio/Sitemap_Creator) 创建。" --base ${process.env.INPUTS_BASE_BRANCH} --head ${BRANCH_NAME}`).toString().trim();
     console.log(`[INFO] 已创建拉取请求: ${PR_URL}`);
 
