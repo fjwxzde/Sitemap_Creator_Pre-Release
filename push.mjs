@@ -12,6 +12,7 @@ let UPDATE_WAY = process.env.UPDATE.toLowerCase().replace(/[\"\'\`-]/g, '').repl
 let CLEAN_AUTO_MERGE = '';
 let CLEAN_LABELS = '';
 let CLEAN_REVIEWER = '';
+let BRANCH_NAME = '';
 
 if (['pr', 'pullrequest', 'pullrequests', 'prs', '拉取请求'].includes(UPDATE_WAY)) {
     UPDATE_WAY = 'PR';
@@ -91,7 +92,7 @@ if (['pr', 'pullrequest', 'pullrequests', 'prs', '拉取请求'].includes(UPDATE
     }
 
     const now = new Date();
-    const BRANCH_NAME = `sitemap-update-${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}${now.getSeconds().toString().padStart(2, '0')}`;
+    BRANCH_NAME = `sitemap-update-${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}${now.getSeconds().toString().padStart(2, '0')}`;
     execSync(`git checkout -b ${BRANCH_NAME}`);
     console.log(`[INFO] 已创建新分支: ${BRANCH_NAME}`);
 } else if (['commit', '提交', '直接提交', 'directcommit', 'commitdirectly'].includes(UPDATE_WAY)) {
