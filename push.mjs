@@ -128,7 +128,7 @@ execSync('git push');
 
 if (UPDATE_WAY === 'PR') {
     const WORKFLOW_URL = `https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
-    const PR_URL = execSync(`gh pr create --title "[${DATE_TIME}] 自动更新网站地图" --body "此拉取请求通过 [工作流](${WORKFLOW_URL}) 使用 [Sitemap Creator](https://github.com/DuckDuckStudio/Sitemap_Creator) 创建。" --base ${process.env.INPUTS_BASE_BRANCH} --head ${BRANCH_NAME}`).toString().trim();
+    const PR_URL = execSync(`gh pr create --title "[${DATE_TIME}] 自动更新网站地图" --body "此拉取请求通过 [工作流](${WORKFLOW_URL}) 使用 [Sitemap Creator](https://github.com/DuckDuckStudio/Sitemap_Creator) 创建。" --base ${process.env.BASE_BRANCH} --head ${BRANCH_NAME}`).toString().trim();
     console.log(`[INFO] 已创建拉取请求: ${PR_URL}`);
 
     if (CLEAN_LABELS) {
