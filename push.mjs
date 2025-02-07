@@ -72,7 +72,7 @@ if (['pr', 'pullrequest', 'pullrequests', 'prs', '拉取请求'].includes(UPDATE
             });
 
             res.on('end', () => {
-                const statusCode = res.statusCode;
+                const statusCode = res.statusCode.toString();
                 const collaborators = JSON.parse(data);
 
                 if (['200', '201'].includes(statusCode)) {
