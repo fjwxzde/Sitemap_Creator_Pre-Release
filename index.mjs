@@ -158,7 +158,7 @@ async function closeOutdatedPRs() {
         page++;
     } while (fetchedPRs.length === 100);
 
-    const outdatedPRs = pulls.filter(pr => pr.title.includes('自动更新网站地图') && pr.base.ref === process.env.BASE_BRANCH && pr.head.ref.includes('Sitemap_Creator'));
+    const outdatedPRs = pulls.filter(pr => pr.title.includes('自动更新网站地图') && pr.base.ref === process.env.BASE_BRANCH && (pr.head.ref.includes('Sitemap_Creator') || pr.head.ref.includes('sitemap-update')));
 
     outdatedPRs.forEach(pr => {
         execSync(`gh pr comment ${pr.number} --body "[Sitemap Creator] 此拉取请求似乎已过时，将自动关闭。"`);
