@@ -65,52 +65,50 @@ if (['pr', 'pullrequest', 'pullrequests', 'prs', '拉取请求'].includes(UPDATE
             }
         };
 
-        https.get(options, (res) => {
-            let data = '';
-            res.on('data', (chunk) => {
-                data += chunk;
-            });
+        const validateReviewers = () => {
+            return new Promise((resolve, reject) => {
+                https.get(options, (res) => {
+                    let data = '';
+                    res.on('data', (chunk) => {
+                        data += chunk;
+                    });
 
-            res.on('end', () => {
-                const statusCode = res.statusCode.toString();
-                const collaborators = JSON.parse(data);
+                    res.on('end', () => {
+                        const statusCode = res.statusCode.toString();
+                        const collaborators = JSON.parse(data);
 
-                if (['200', '201'].includes(statusCode)) {
-                    reviewers.forEach(reviewer => {
-                        const isCollaborator = collaborators.some(collaborator => collaborator.login === reviewer);
-                        if (!isCollaborator) {
-                            console.error(`[ERROR] ${reviewer} 不是仓库的协作者`);
-                            if (process.env.DEBUG) {
-                                console.log('[DEBUG] GitHub API 请求返回:');
-                                console.log(JSON.stringify(collaborators, null, 2));
-                            }
-                            process.exit(1);
-                        } else if (process.env.DEBUG) {
-                            console.log(`[DEBUG] 审查者 ${reviewer} 鉴权成功`);
+                        if (['200', '201'].includes(statusCode)) {
+                            reviewers.forEach(reviewer => {
+                                const isCollaborator = collaborators.some(collaborator => collaborator.login === reviewer);
+                                if (!isCollaborator) {
+                                    reject(`[ERROR] ${reviewer} 不是仓库的协作者`);
+                                } else if (process.env.DEBUG) {
+                                    console.log(`[DEBUG] 审查者 ${reviewer} 鉴权成功`);
+                                }
+                            });
+                            resolve();
+                        } else if (statusCode === 401) {
+                            reject('[ERROR] 验证审查者时出错: 鉴权失败 (401):');
+                        } else if (statusCode === 403) {
+                            reject('[ERROR] 验证审查者时出错: 没有权限或达到速率限制 (403)');
+                        } else if (statusCode === 404) {
+                            reject('[ERROR] 验证审查者时出错: 没有权限或仓库不存在 (404)');
+                        } else {
+                            reject(`[ERROR] 验证审查者时出错: 未命中的非成功状态码 (${statusCode})`);
                         }
                     });
-                } else if (statusCode === 401) {
-                    console.error('[ERROR] 验证审查者时出错: 鉴权失败 (401):');
-                    console.log(JSON.stringify(collaborators, null, 2));
-                    process.exit(1);
-                } else if (statusCode === 403) {
-                    console.error('[ERROR] 验证审查者时出错: 没有权限或达到速率限制 (403)');
-                    console.log(JSON.stringify(collaborators, null, 2));
-                    process.exit(1);
-                } else if (statusCode === 404) {
-                    console.error('[ERROR] 验证审查者时出错: 没有权限或仓库不存在 (404)');
-                    console.log(JSON.stringify(collaborators, null, 2));
-                    process.exit(1);
-                } else {
-                    console.error(`[ERROR] 验证审查者时出错: 未命中的非成功状态码 (${statusCode})`);
-                    console.log(JSON.stringify(collaborators, null, 2));
-                    process.exit(1);
-                }
+                }).on('error', (e) => {
+                    reject(`[ERROR] 请求失败: ${e.message}`);
+                });
             });
-        }).on('error', (e) => {
-            console.error(`[ERROR] 请求失败: ${e.message}`);
+        };
+
+        try {
+            await validateReviewers();
+        } catch (error) {
+            console.error(error);
             process.exit(1);
-        });
+        }
     }
 
     const now = new Date();
