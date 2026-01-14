@@ -1,8 +1,9 @@
 # Sitemap Creator
 用 GitHub Action 🚀 在你的仓库中创建和更新网站地图。  
 
-> [!WARNING] 
-> 这是 Sitemap Creator 的 **预发行版** 仓库。稳定版仓库请前往 [DuckDuckStudio/Sitemap_Creator](https://github.com/DuckDuckStudio/Sitemap_Creator) 查看。  
+> [!CAUTION] 
+> 这是 Sitemap Creator 的 **预发行版** 仓库，仅供测试，且内容过时。  
+> 生产环境下请使用 [DuckDuckStudio/Sitemap_Creator](https://github.com/DuckDuckStudio/Sitemap_Creator)。  
 
 [![GitHub Release](https://img.shields.io/github/release/fjwxzde/Sitemap_Creator?style=flat)](https://github.com/fjwxzde/Sitemap_Creator/releases/latest)  
 [反馈Bug🐛](https://github.com/DuckDuckStudio/Sitemap_Creator/issues) | [使用示例🚀](#6-使用示例)  
